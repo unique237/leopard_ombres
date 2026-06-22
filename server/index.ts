@@ -49,7 +49,7 @@ app.get("/api/health", (_req, res) => {
 const isProduction = process.env.NODE_ENV === "production";
 if (isProduction) {
   app.use(express.static(DIST_DIR));
-  app.get("*", (_req, res) => {
+  app.get(/.*/, (_req, res) => {
     res.sendFile(path.join(DIST_DIR, "index.html"));
   });
 }

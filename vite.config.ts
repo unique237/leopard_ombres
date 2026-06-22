@@ -15,6 +15,8 @@ export default defineConfig({
     include: ["react-router-dom"],
   },
   server: {
+    host: true,
+    allowedHosts: [".ngrok-free.dev", "luvenia-postdiscoidal-lexi.ngrok-free.dev", ".loca.lt"],
     proxy: {
       "/api": {
         target: "http://localhost:3001",

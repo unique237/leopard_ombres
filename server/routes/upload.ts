@@ -2,7 +2,7 @@ import { Router } from "express";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
-import { restUpdate } from "../db.js";
+import { pgQuery } from "../db.js";
 
 const UPLOAD_DIR = path.resolve(process.cwd(), "uploads");
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
@@ -38,11 +38,9 @@ router.post("/", upload.single("file"), async (req, res) => {
 
   if (order_id) {
     try {
-      await restUpdate(
-        "orders",
-        `id=eq.${order_id}&status=eq.pending`,
-        { payment_proof_url: fileUrl, status: "verifying" },
-        { token: undefined }
+      await pgQuery(
+        `UPDATE orders SET payment_proof_url = $1, status = 'verifying' WHERE id = $2 AND status = 'pending'`,
+        [fileUrl, order_id]
       );
     } catch (err) {
       console.error("[upload] Failed to update order", err);

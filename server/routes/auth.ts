@@ -1,7 +1,7 @@
 import { Router } from "express";
 import bcrypt from "bcryptjs";
 import { signToken } from "../auth.js";
-import { restRpc, supabaseSignIn, supabaseSignUp, setAdminSession } from "../db.js";
+import { pgQuery, pgQuerySingle } from "../db.js";
 import { requireAdmin, type AuthedRequest } from "../middleware/auth.js";
 
 const router = Router();
@@ -14,29 +14,27 @@ router.post("/register", async (req, res) => {
   }
 
   try {
-    // Try to register in Supabase Auth first (for DB access via JWT)
-    const supaResult = await supabaseSignUp(email, password);
-    if (supaResult.error && !supaResult.error.includes("already registered")) {
-      // Also try local admin_users table as fallback
-    }
-
-    // Register in local admin_users via SECURITY DEFINER RPC
     const hash = await bcrypt.hash(password, 10);
-    const result = await restRpc<{ error?: string; id?: string; email?: string }>(
-      "admin_register_user",
-      { p_email: email, p_hash: hash }
+    const result = await pgQuerySingle<{ id: string; email: string; error?: string }>(
+      "SELECT id, email FROM admin_register_user($1, $2)",
+      [email, hash]
     );
 
-    if (result?.error) {
-      res.status(400).json({ error: result.error });
+    if (!result || result.error) {
+      res.status(400).json({ error: result?.error || "Registration failed" });
       return;
     }
 
-    const token = signToken({ sub: result.id ?? email, email });
-    res.json({ token, user: { email } });
-  } catch (err) {
+    const token = signToken({ sub: result.id, email: result.email });
+    res.json({ token, user: { email: result.email } });
+  } catch (err: any) {
     console.error("[auth/register]", err);
-    res.status(500).json({ error: "Registration failed" });
+    // If user already exists, the function throws or returns error.
+    if (err.message && err.message.includes("already registered")) {
+      res.status(400).json({ error: "Email already registered" });
+    } else {
+      res.status(500).json({ error: "Registration failed" });
+    }
   }
 });
 
@@ -48,13 +46,10 @@ router.post("/login", async (req, res) => {
   }
 
   try {
-    // 1. Verify against local admin_users table
-    const users = await restRpc<Array<{ id: string; email: string; password_hash: string }>>(
-      "admin_get_user_by_email",
-      { p_email: email }
+    const user = await pgQuerySingle<{ id: string; email: string; password_hash: string }>(
+      "SELECT id, email, password_hash FROM admin_get_user_by_email($1)",
+      [email]
     );
-
-    const user = Array.isArray(users) ? users[0] : null;
 
     if (!user) {
       res.status(401).json({ error: "Invalid email or password" });
@@ -65,16 +60,6 @@ router.post("/login", async (req, res) => {
     if (!valid) {
       res.status(401).json({ error: "Invalid email or password" });
       return;
-    }
-
-    // 2. Also sign into Supabase Auth so the backend can make authenticated DB calls
-    try {
-      const supaResult = await supabaseSignIn(email, password);
-      if ("access_token" in supaResult) {
-        setAdminSession(supaResult.access_token, supaResult.refresh_token, supaResult.expires_in);
-      }
-    } catch {
-      // Non-fatal: DB operations will fall back to anon key
     }
 
     const token = signToken({ sub: user.id, email: user.email });

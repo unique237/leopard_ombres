@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { restGet, restCount } from "../db.js";
+import { pgQuery } from "../db.js";
 import { requireAdmin } from "../middleware/auth.js";
 
 const router = Router();
@@ -11,21 +11,20 @@ router.get("/", requireAdmin, async (_req, res) => {
 
     // Fetch data in parallel
     const [visits30, orders, books] = await Promise.all([
-      restGet<{ visitor_id: string; created_at: string }>("page_visits", {
-        select: "visitor_id,created_at",
-        filters: `created_at=gte.${since30}`,
-        order: "created_at.asc",
-      }),
-      restGet<{
+      pgQuery<{ visitor_id: string; created_at: string }>(
+        `SELECT visitor_id, created_at FROM page_visits WHERE created_at >= $1 ORDER BY created_at ASC`,
+        [since30]
+      ),
+      pgQuery<{
         id: string;
         amount: number;
         status: string;
         created_at: string;
-      }>("orders", { order: "created_at.desc" }),
-      restGet<{ status: string }>("books", { select: "status" }),
+      }>(`SELECT id, amount, status, created_at FROM orders ORDER BY created_at DESC`),
+      pgQuery<{ status: string }>(`SELECT status FROM books`)
     ]);
 
-    const visits24 = visits30.filter((v) => v.created_at >= since24).length;
+    const visits24 = visits30.filter((v) => new Date(v.created_at).toISOString() >= since24).length;
     const uniqueVisitors = new Set(visits30.map((v) => v.visitor_id)).size;
 
     const ordersPending = orders.filter((o) => o.status === "pending" || o.status === "verifying").length;
@@ -43,8 +42,8 @@ router.get("/", requireAdmin, async (_req, res) => {
       const day = d.toISOString().slice(0, 10);
       daily.push({
         day,
-        visits: visits30.filter((v) => v.created_at.slice(0, 10) === day).length,
-        orders: orders.filter((o) => o.created_at.slice(0, 10) === day).length,
+        visits: visits30.filter((v) => new Date(v.created_at).toISOString().slice(0, 10) === day).length,
+        orders: orders.filter((o) => new Date(o.created_at).toISOString().slice(0, 10) === day).length,
       });
     }
 

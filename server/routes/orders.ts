@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { restGet, restInsert, restUpdate } from "../db.js";
+import { pgQuery } from "../db.js";
 import { requireAdmin } from "../middleware/auth.js";
 
 const router = Router();
@@ -25,25 +25,31 @@ router.post("/", async (req, res) => {
   }
 
   try {
-    const row = {
-      id: id || crypto.randomUUID(),
-      format,
-      first_name: String(first_name).slice(0, 100),
-      email: String(email).slice(0, 200),
-      phone: phone ?? null,
-      city: city ?? null,
-      address: address ?? null,
-      delivery_method: delivery_method ?? null,
-      payment_method,
-      payment_proof_url: null,
-      amount: Number(amount),
-      status: "pending",
-    };
+    const orderId = id || crypto.randomUUID();
+    
+    await pgQuery(
+      `INSERT INTO orders (
+        id, format, first_name, email, phone, city, address, 
+        delivery_method, payment_method, payment_proof_url, amount, status
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+      [
+        orderId,
+        format,
+        String(first_name).slice(0, 100),
+        String(email).slice(0, 200),
+        phone ?? null,
+        city ?? null,
+        address ?? null,
+        delivery_method ?? null,
+        payment_method,
+        null,
+        Number(amount),
+        "pending"
+      ]
+    );
 
-    await restInsert("orders", row, { token: undefined }); // anon key — INSERT policy allows it
-
-    console.log(`[orders] Created order ${row.id} for ${email}`);
-    res.status(201).json({ id: row.id });
+    console.log(`[orders] Created order ${orderId} for ${email}`);
+    res.status(201).json({ id: orderId });
   } catch (err) {
     console.error("[orders/create]", err);
     res.status(500).json({ error: "Failed to create order" });
@@ -61,11 +67,9 @@ router.patch("/:id/proof", async (req, res) => {
   }
 
   try {
-    await restUpdate(
-      "orders",
-      `id=eq.${id}&status=eq.pending`,
-      { payment_proof_url, status: "verifying" },
-      { token: undefined }
+    await pgQuery(
+      `UPDATE orders SET payment_proof_url = $1, status = 'verifying' WHERE id = $2 AND status = 'pending'`,
+      [payment_proof_url, id]
     );
     res.json({ ok: true });
   } catch (err) {
@@ -77,7 +81,7 @@ router.patch("/:id/proof", async (req, res) => {
 // ── Admin: list all orders ────────────────────────────────────────────────────
 router.get("/admin", requireAdmin, async (_req, res) => {
   try {
-    const orders = await restGet("orders", { order: "created_at.desc" });
+    const orders = await pgQuery(`SELECT * FROM orders ORDER BY created_at DESC`);
     res.json(orders);
   } catch (err) {
     console.error("[orders/admin/list]", err);
@@ -97,7 +101,7 @@ router.patch("/admin/:id/status", requireAdmin, async (req, res) => {
   }
 
   try {
-    await restUpdate("orders", `id=eq.${id}`, { status });
+    await pgQuery(`UPDATE orders SET status = $1 WHERE id = $2`, [status, id]);
     res.json({ ok: true });
   } catch (err) {
     console.error("[orders/admin/status]", err);

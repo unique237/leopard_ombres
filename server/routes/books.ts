@@ -1,45 +1,48 @@
 import { Router } from "express";
-import { restGet, restInsert, restUpdate, restDelete } from "../db.js";
+import { pgQuery, pgQuerySingle } from "../db.js";
 import { requireAdmin } from "../middleware/auth.js";
 
 const router = Router();
 
-// ── Public: published books ───────────────────────────────────────────────────
+// ── Public: list published books ──────────────────────────────────────────────
 router.get("/", async (_req, res) => {
   try {
-    const books = await restGet("books", {
-      filters: "status=eq.published",
-      order: "featured.desc,updated_at.desc",
-      token: undefined,
-    });
+    const books = await pgQuery(`SELECT * FROM books WHERE status = 'published' ORDER BY featured DESC, updated_at DESC`);
     res.json(books);
   } catch (err) {
-    console.error("[books/public]", err);
-    res.status(500).json({ error: "Failed to fetch books" });
+    console.error("[books/public/list]", err);
+    res.status(500).json({ error: "Failed to load books" });
   }
 });
 
-// ── Admin: all books ──────────────────────────────────────────────────────────
+// ── Admin: list all books ─────────────────────────────────────────────────────
 router.get("/admin", requireAdmin, async (_req, res) => {
   try {
-    const books = await restGet("books", { order: "featured.desc,updated_at.desc" });
+    const books = await pgQuery(`SELECT * FROM books ORDER BY featured DESC, updated_at DESC`);
     res.json(books);
   } catch (err) {
     console.error("[books/admin/list]", err);
-    res.status(500).json({ error: "Failed to fetch books" });
+    res.status(500).json({ error: "Failed to load books" });
   }
 });
 
 // ── Admin: create book ────────────────────────────────────────────────────────
 router.post("/admin", requireAdmin, async (req, res) => {
   const data = req.body ?? {};
-  if (!data.title || !data.author) {
-    res.status(400).json({ error: "Title and author required" });
-    return;
-  }
   try {
     const now = new Date().toISOString();
-    const book = await restInsert("books", { ...data, created_at: now, updated_at: now }, { returning: true });
+    const book = await pgQuerySingle(
+      `INSERT INTO books (
+        title, subtitle, tagline, author, description, cover_url, 
+        price_promo, price_full, currency, status, featured, release_date,
+        created_at, updated_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *`,
+      [
+        data.title, data.subtitle, data.tagline, data.author, data.description, data.cover_url,
+        data.price_promo, data.price_full, data.currency, data.status, data.featured, data.release_date,
+        now, now
+      ]
+    );
     res.status(201).json(book);
   } catch (err) {
     console.error("[books/admin/create]", err);
@@ -50,12 +53,22 @@ router.post("/admin", requireAdmin, async (req, res) => {
 // ── Admin: update book ────────────────────────────────────────────────────────
 router.put("/admin/:id", requireAdmin, async (req, res) => {
   const { id } = req.params;
-  const data = { ...req.body, updated_at: new Date().toISOString() };
-  delete data.id;
-  delete data.created_at;
+  const data = req.body ?? {};
+  
+  if (Object.keys(data).length === 0) return res.json({ ok: true });
 
   try {
-    await restUpdate("books", `id=eq.${id}`, data);
+    data.updated_at = new Date().toISOString();
+    
+    const setClause = Object.keys(data)
+      .map((key, i) => `${key} = $${i + 1}`)
+      .join(", ");
+    
+    const values = Object.values(data);
+    values.push(id);
+    
+    await pgQuery(`UPDATE books SET ${setClause} WHERE id = $${values.length}`, values);
+    
     res.json({ ok: true });
   } catch (err) {
     console.error("[books/admin/update]", err);
@@ -67,7 +80,7 @@ router.put("/admin/:id", requireAdmin, async (req, res) => {
 router.delete("/admin/:id", requireAdmin, async (req, res) => {
   const { id } = req.params;
   try {
-    await restDelete("books", `id=eq.${id}`);
+    await pgQuery(`DELETE FROM books WHERE id = $1`, [id]);
     res.json({ ok: true });
   } catch (err) {
     console.error("[books/admin/delete]", err);

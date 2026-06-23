@@ -1,58 +1,42 @@
 import { Router } from "express";
-import { restGet, restInsert } from "../db.js";
+import { pgQuery } from "../db.js";
 import { requireAdmin } from "../middleware/auth.js";
 
 const router = Router();
 
-// ── Public: get all settings ──────────────────────────────────────────────────
+// ── Public: read settings (promo, contact, etc.) ──────────────────────────────
 router.get("/", async (_req, res) => {
   try {
-    const rows = await restGet("site_settings", { select: "key,value", token: undefined });
+    const rows = await pgQuery<{ key: string; value: unknown }>(`SELECT key, value FROM site_settings`);
     res.json(rows);
   } catch (err) {
-    console.error("[settings/get]", err);
-    res.status(500).json({ error: "Failed to fetch settings" });
+    console.error("[settings/list]", err);
+    res.status(500).json({ error: "Failed to load settings" });
   }
 });
 
-// ── Admin: upsert a setting ───────────────────────────────────────────────────
+// ── Admin: update specific setting ────────────────────────────────────────────
 router.put("/:key", requireAdmin, async (req, res) => {
   const { key } = req.params;
   const { value } = req.body ?? {};
-  if (value === undefined) {
-    res.status(400).json({ error: "value required" });
-    return;
-  }
 
-  const ALLOWED_KEYS = ["promo", "contact", "payments", "bank"];
-  if (!ALLOWED_KEYS.includes(key)) {
-    res.status(400).json({ error: "Unknown settings key" });
+  if (!value) {
+    res.status(400).json({ error: "value is required" });
     return;
   }
 
   try {
-    // Upsert via insert with on conflict — PostgREST supports this with Prefer header
-    const SUPABASE_URL = (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "").replace(/\/$/, "");
-    const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || "";
-    const { getAdminToken } = await import("../db.js");
-
-    // We import getAdminToken indirectly via restInsert — re-use its token
-    await restInsert(
-      "site_settings",
-      { key, value, updated_at: new Date().toISOString() },
-      { returning: false }
+    const now = new Date().toISOString();
+    await pgQuery(
+      `INSERT INTO site_settings (key, value, updated_at) VALUES ($1, $2, $3) 
+       ON CONFLICT (key) DO UPDATE SET value = $2, updated_at = $3`,
+      [key, JSON.stringify(value), now]
     );
+
     res.json({ ok: true });
   } catch (err) {
-    // Try PATCH if insert fails (record exists)
-    try {
-      const { restUpdate } = await import("../db.js");
-      await restUpdate("site_settings", `key=eq.${key}`, { value, updated_at: new Date().toISOString() });
-      res.json({ ok: true });
-    } catch (err2) {
-      console.error("[settings/upsert]", err2);
-      res.status(500).json({ error: "Failed to save settings" });
-    }
+    console.error(`[settings/update] ${key}`, err);
+    res.status(500).json({ error: "Failed to update setting" });
   }
 });
 

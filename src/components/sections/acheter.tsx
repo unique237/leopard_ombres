@@ -3,32 +3,23 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
-  BookMarked,
   Smartphone,
-  Truck,
   ShieldCheck,
-  Gift,
   Clock,
   Check,
   Loader2,
   Upload,
   Copy,
   ExternalLink,
+  Download,
+  Mail,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Field, FieldLabel, FieldError } from "@/components/ui/field";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";  // ← THIS WAS MISSING
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
@@ -37,101 +28,23 @@ import { cn } from "@/lib/utils";
 import { Countdown } from "@/components/countdown";
 import { useSpotsRemaining } from "@/hooks/use-spots";
 import { useSiteSettings } from "@/lib/settings-context";
-import { api, type OrderFormat, type PaymentMethod, type Order } from "@/lib/api";
+import { api, type PaymentMethod, type Order } from "@/lib/api";
 
-const physicalSchema = z.object({
-  first_name: z.string().min(2, "Votre prénom est requis"),
-  email: z.string().email("Email invalide"),
-  phone: z.string().min(8, "Numéro de téléphone requis"),
-  //city: z.string().min(2, "Ville requise"),
-  country: z.string().min(1, "Pays requis"),
-  city: z.string().min(1, "Ville requise"),
-  address: z.string().min(5, "Adresse de livraison requise"),
-  delivery_method: z.enum(["home", "pickup"]),
-  payment_method: z.enum(["mtn", "orange", "cinetpay", "paypal"]),
-});
-
-const digitalSchema = z.object({
+const ebookSchema = z.object({
   first_name: z.string().min(2, "Votre prénom est requis"),
   email: z.string().email("Email invalide"),
   payment_method: z.enum(["mtn", "orange", "cinetpay", "paypal"]),
 });
 
-type PhysicalForm = z.infer<typeof physicalSchema>;
-type DigitalForm = z.infer<typeof digitalSchema>;
+type EbookForm = z.infer<typeof ebookSchema>;
 
-const physicalBonuses = [
-  "Le livre physique dédicacé (édition lancement)",
-  "EPUB + PDF offerts en bonus",
-  "Lettre personnelle de l'auteure",
-  "Extrait inédit du Tome II — Les Héritières du Léopard",
-];
-
-const digitalBonuses = [
+const ebookBonuses = [
   "EPUB + PDF (téléphone, tablette, liseuse, PC)",
+  "Livraison par email en 5 minutes",
+  "Extrait inédit du Tome II — Les Héritières du Léopard",
   "Fond d'écran exclusif de la couverture",
   "Lettre personnelle de l'auteure",
-  "Extrait inédit du Tome II — Les Héritières du Léopard",
-  "Livraison en 5 minutes après vérification",
 ];
-
-const COUNTRIES = [
-  "Cameroun",
-  "Congo",
-  "Gabon",
-];
-
-const CITIES_BY_COUNTRY = {
-  Cameroun: [
-    "Bafang",
-    "Bafia",
-    "Bafoussam",
-    "Bamenda",
-    "Bertoua",
-    "Buea",
-    "Douala",
-    "Dschang",
-    "Ebolowa",
-    "Edéa",
-    "Foumban",
-    "Garoua",
-    "Kribi",
-    "Kumba",
-    "Limbe",
-    "Maroua",
-    "Ngaoundéré",
-    "Nkongsamba",
-    "Sangmélima",
-    "Yaoundé",
-  ],
-
-  Congo: [
-    "Brazzaville",
-    "Dolisie",
-    "Impfondo",
-    "Kinkala",
-    "Loandjili",
-    "Madingou",
-    "Mossendjo",
-    "Nkayi",
-    "Ouesso",
-    "Owando",
-    "Pointe-Noire",
-  ],
-
-  Gabon: [
-    "Bitam",
-    "Franceville",
-    "Lambaréné",
-    "Libreville",
-    "Makokou",
-    "Mouila",
-    "Ntoum",
-    "Oyem",
-    "Port-Gentil",
-    "Tchibanga",
-  ],
-} as const;
 
 const PAYMENT_LOGOS: Record<string, string> = {
   mtn: "https://res.cloudinary.com/drl74dz2k/image/upload/v1781919868/momo_kxtiwg.jpg",
@@ -173,13 +86,13 @@ function PurchaseForm({ onCreated }: { onCreated: (o: Order) => void }) {
       <div className="mx-auto max-w-5xl">
         <div className="text-center">
           <Badge variant="outline" className="border-primary/40 bg-primary/5 text-primary">
-            Offre de lancement · 500 premiers acheteurs
+            Offre de lancement · 500 premiers lecteurs
           </Badge>
           <h2 className="mt-4 font-serif text-3xl font-semibold sm:text-4xl lg:text-5xl">
-            Commandez votre exemplaire
+            Obtenez votre livre numérique
           </h2>
           <p className="mt-3 text-base text-muted-foreground sm:text-lg">
-            Choisissez votre format. Réglez en un tap. Lisez ce que tout le monde lira demain.
+            Réglez en un tap. Recevez votre EPUB + PDF par email en 5 minutes.
           </p>
         </div>
 
@@ -219,52 +132,16 @@ function PurchaseForm({ onCreated }: { onCreated: (o: Order) => void }) {
                 />
               </div>
               <div className="mt-3 text-xs text-muted-foreground">
-                {sold} lecteurs ont déjà commandé · physique + numérique confondus
+                {sold} lecteurs ont déjà commandé · réservé aux 500 premiers
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Format selector */}
-        <Tabs defaultValue="physical" className="mt-10">
-          <TabsList className="mx-auto grid h-auto w-full max-w-2xl grid-cols-2 gap-2 bg-card/60 p-2">
-            <TabsTrigger
-              value="physical"
-              className="flex h-auto flex-col gap-1 py-3 data-[state=active]:bg-primary/15 data-[state=active]:text-primary"
-            >
-              <div className="flex items-center gap-2">
-                <BookMarked className="size-4" />
-                <span className="font-semibold">Version physique</span>
-                <Badge className="ml-1 h-4 bg-emerald text-emerald-foreground hover:bg-emerald">
-                  Le plus demandé
-                </Badge>
-              </div>
-              <span className="text-xs text-muted-foreground">
-                Livré chez vous · Cameroun, Congo, Gabon
-              </span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="digital"
-              className="flex h-auto flex-col gap-1 py-3 data-[state=active]:bg-primary/15 data-[state=active]:text-primary"
-            >
-              <div className="flex items-center gap-2">
-                <Smartphone className="size-4" />
-                <span className="font-semibold">Version numérique</span>
-              </div>
-              <span className="text-xs text-muted-foreground">
-                EPUB + PDF · livraison 5 min
-              </span>
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="physical" className="mt-8">
-            <PhysicalTunnel onCreated={onCreated} />
-          </TabsContent>
-
-          <TabsContent value="digital" className="mt-8">
-            <DigitalTunnel onCreated={onCreated} />
-          </TabsContent>
-        </Tabs>
+        {/* Single ebook form */}
+        <div className="mt-10">
+          <EbookTunnel onCreated={onCreated} />
+        </div>
       </div>
     </section>
   );
@@ -316,11 +193,8 @@ function PaymentMethodSelector({
           <RadioGroupItem id={`pm-${m.id}`} value={m.id} className="mt-0.5" />
           <div className="flex flex-1 items-center justify-between gap-2">
             <div className="min-w-0">
-              {/*<div className="truncate font-medium text-foreground">{m.label}</div>*/}
               <div className="mt-1 text-xs text-muted-foreground">{m.number}</div>
             </div>
-
-            {/* Logo instead of letter badge */}
             {PAYMENT_LOGOS[m.id] && (
               <div className="flex h-9 w-16 shrink-0 items-center justify-center overflow-hidden rounded-md border border-border/60 bg-white p-1">
                 <img
@@ -338,368 +212,14 @@ function PaymentMethodSelector({
   );
 }
 
-function PhysicalTunnel({ onCreated }: { onCreated: (o: Order) => void }) {
+function EbookTunnel({ onCreated }: { onCreated: (o: Order) => void }) {
   const { price_promo, currency } = useSiteSettings();
-  const form = useForm<PhysicalForm>({
-    resolver: zodResolver(physicalSchema),
-    defaultValues: {
-        first_name: "",
-        email: "",
-        phone: "",
-        country: "",
-        city: "",
-        address: "",
-        delivery_method: "home",
-    },
-  });
-
-  const onSubmit = async (values: PhysicalForm) => {
-    const id = crypto.randomUUID();
-    const created_at = new Date().toISOString();
-    const row: Order = {
-      id,
-      format: "physical",
-      first_name: values.first_name,
-      email: values.email,
-      phone: values.phone,
-      city: values.city,
-      address: values.address,
-      delivery_method: values.delivery_method,
-      payment_method: values.payment_method,
-      payment_proof_url: null,
-      amount: price_promo,
-      status: "pending",
-      created_at,
-    };
-
-    try {
-      await api.orders.create({
-        id: row.id,
-        format: row.format,
-        first_name: row.first_name,
-        email: row.email,
-        phone: row.phone,
-        city: row.city,
-        address: row.address,
-        delivery_method: row.delivery_method,
-        payment_method: row.payment_method,
-        amount: row.amount,
-      });
-      toast.success("Commande enregistrée");
-      onCreated(row);
-    } catch {
-      toast.error("Une erreur est survenue. Réessayez dans un instant.");
-    }
-  };
-
-  return (
-    <div className="grid gap-8 lg:grid-cols-12">
-      <div className="lg:col-span-5">
-        <Card className="sticky top-24 border-primary/30 bg-card/70 backdrop-blur">
-          <CardContent className="space-y-5 p-6">
-            <div>
-              <Badge className="bg-emerald text-emerald-foreground hover:bg-emerald">
-                Le plus demandé
-              </Badge>
-              <h3 className="mt-3 font-serif text-2xl font-semibold">
-                Le livre physique
-              </h3>
-              <p className="mt-1.5 text-sm text-muted-foreground">
-                L'objet à offrir, à dédicacer, à garder. Couverture mate, papier crème.
-              </p>
-            </div>
-
-            <Separator />
-
-            <BonusList items={physicalBonuses} />
-
-            <Separator />
-
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Truck className="size-4 text-primary" />
-                Livraison Cameroun, Congo, Gabon · 3 à 7 jours
-              </div>
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <ShieldCheck className="size-4 text-primary" />
-                Paiement vérifié manuellement par l'équipe
-              </div>
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Gift className="size-4 text-primary" />
-                EPUB/PDF envoyés immédiatement en bonus
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5 lg:col-span-7">
-        <Card>
-          <CardContent className="space-y-5 p-6">
-            <h4 className="font-serif text-lg font-semibold">Vos coordonnées</h4>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Controller
-                name="first_name"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor={field.name}>Prénom</FieldLabel>
-                    <Input
-                      {...field}
-                      id={field.name}
-                      placeholder="Marie"
-                      aria-invalid={fieldState.invalid}
-                    />
-                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                  </Field>
-                )}
-              />
-              <Controller
-                name="phone"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor={field.name}>Téléphone</FieldLabel>
-                    <Input
-                      {...field}
-                      id={field.name}
-                      placeholder="+237 6XX XX XX XX"
-                      aria-invalid={fieldState.invalid}
-                    />
-                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                  </Field>
-                )}
-              />
-            </div>
-            <Controller
-              name="email"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={field.name}>Email</FieldLabel>
-                  <Input
-                    {...field}
-                    id={field.name}
-                    type="email"
-                    placeholder="vous@email.com"
-                    aria-invalid={fieldState.invalid}
-                  />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                </Field>
-              )}
-            />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="space-y-5 p-6">
-            <h4 className="font-serif text-lg font-semibold">Livraison</h4>
-
-            <Controller
-              name="delivery_method"
-              control={form.control}
-              render={({ field }) => (
-                <RadioGroup
-                  value={field.value}
-                  onValueChange={field.onChange}
-                  className="grid gap-3 sm:grid-cols-2"
-                >
-                  <label
-                    htmlFor="dm-home"
-                    className={cn(
-                      "flex cursor-pointer items-start gap-3 rounded-lg border bg-card/40 p-4 transition",
-                      field.value === "home"
-                        ? "border-primary ring-1 ring-primary/40"
-                        : "border-border hover:border-primary/40"
-                    )}
-                  >
-                    <RadioGroupItem id="dm-home" value="home" className="mt-0.5" />
-                    <div>
-                      <div className="font-medium">Livraison à domicile</div>
-                      <div className="mt-1 text-xs text-muted-foreground">
-                        À votre adresse, sous 3 à 7 jours
-                      </div>
-                    </div>
-                  </label>
-                  <label
-                    htmlFor="dm-pickup"
-                    className={cn(
-                      "flex cursor-pointer items-start gap-3 rounded-lg border bg-card/40 p-4 transition",
-                      field.value === "pickup"
-                        ? "border-primary ring-1 ring-primary/40"
-                        : "border-border hover:border-primary/40"
-                    )}
-                  >
-                    <RadioGroupItem id="dm-pickup" value="pickup" className="mt-0.5" />
-                    <div>
-                      <div className="font-medium">Retrait en main propre</div>
-                      <div className="mt-1 text-xs text-muted-foreground">
-                        Yaoundé / Douala · sur rendez-vous
-                      </div>
-                    </div>
-                  </label>
-                </RadioGroup>
-              )}
-            />
-
-            <div className="grid gap-4 sm:grid-cols-2">
-
-              {/* Country*/}
-              <Controller
-                name="country"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel>Pays</FieldLabel>
-              
-                    <Select
-                      value={field.value}
-                      onValueChange={(value) => {
-                        field.onChange(value);
-              
-                        // reset city when country changes
-                        form.setValue("city", "");
-                      }}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Sélectionnez votre pays" />
-                      </SelectTrigger>
-              
-                      <SelectContent>
-                        {COUNTRIES.map((country) => (
-                          <SelectItem key={country} value={country}>
-                            {country}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-              
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                )}
-              />
-
-              {/*City*/}
-              <Controller
-                name="city"
-                control={form.control}
-                render={({ field, fieldState }) => {
-                  const selectedCountry = form.watch("country");
-              
-                  return (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel>Ville</FieldLabel>
-              
-                      <Select
-                        value={field.value}
-                        onValueChange={field.onChange}
-                        disabled={!selectedCountry}
-                      >
-                        <SelectTrigger>
-                          <SelectValue
-                            placeholder={
-                              selectedCountry
-                                ? "Choisissez votre ville"
-                                : "Sélectionnez d'abord un pays"
-                            }
-                          />
-                        </SelectTrigger>
-              
-                        <SelectContent>
-                          {selectedCountry &&
-                            CITIES_BY_COUNTRY[
-                              selectedCountry as keyof typeof CITIES_BY_COUNTRY
-                            ]?.map((city) => (
-                              <SelectItem
-                                key={city}
-                                value={city}
-                              >
-                                {city}
-                              </SelectItem>
-                            ))}
-                        </SelectContent>
-                      </Select>
-              
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  );
-                }}
-              />
-              <Controller
-                name="address"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor={field.name}>Adresse / quartier</FieldLabel>
-                    <Input
-                      {...field}
-                      id={field.name}
-                      placeholder="Bastos, rue 1.234"
-                      aria-invalid={fieldState.invalid}
-                    />
-                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                  </Field>
-                )}
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="space-y-5 p-6">
-            <h4 className="font-serif text-lg font-semibold">Moyen de paiement</h4>
-            <Controller
-              name="payment_method"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <PaymentMethodSelector
-                    value={field.value}
-                    onChange={field.onChange}
-                    invalid={fieldState.invalid}
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-          </CardContent>
-        </Card>
-
-        <Button
-          type="submit"
-          size="lg"
-          disabled={form.formState.isSubmitting}
-          className="h-13 w-full text-base font-semibold shadow-lg shadow-primary/20"
-        >
-          {form.formState.isSubmitting ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : (
-            <>Commander à {price_promo.toLocaleString("fr-FR")} {currency}</>
-          )}
-        </Button>
-
-        <p className="text-center text-xs text-muted-foreground">
-          En commandant vous acceptez nos CGV. Paiement vérifié sous 5 minutes.
-        </p>
-      </form>
-    </div>
-  );
-}
-
-function DigitalTunnel({ onCreated }: { onCreated: (o: Order) => void }) {
-  const { price_promo, currency } = useSiteSettings();
-  const form = useForm<DigitalForm>({
-    resolver: zodResolver(digitalSchema),
+  const form = useForm<EbookForm>({
+    resolver: zodResolver(ebookSchema),
     defaultValues: { first_name: "", email: "" },
   });
 
-  const onSubmit = async (values: DigitalForm) => {
+  const onSubmit = async (values: EbookForm) => {
     const id = crypto.randomUUID();
     const row: Order = {
       id,
@@ -739,37 +259,54 @@ function DigitalTunnel({ onCreated }: { onCreated: (o: Order) => void }) {
 
   return (
     <div className="grid gap-8 lg:grid-cols-12">
+      {/* Sidebar — what you get */}
       <div className="lg:col-span-5">
         <Card className="sticky top-24 border-primary/30 bg-card/70 backdrop-blur">
           <CardContent className="space-y-5 p-6">
             <div>
-              <Badge variant="outline" className="border-primary/40 text-primary">
-                Livraison instantanée
-              </Badge>
+              <div className="flex items-center gap-2">
+                <Smartphone className="size-4 text-primary" />
+                <Badge variant="outline" className="border-primary/40 text-primary">
+                  Livraison instantanée
+                </Badge>
+              </div>
               <h3 className="mt-3 font-serif text-2xl font-semibold">
                 EPUB + PDF
               </h3>
               <p className="mt-1.5 text-sm text-muted-foreground">
-                Lisez sur téléphone, tablette, liseuse ou PC. Pas d'attente, pas de port.
+                Lisez sur téléphone, tablette, liseuse ou PC. Reçu par email en 5 minutes après vérification.
               </p>
             </div>
+
             <Separator />
-            <BonusList items={digitalBonuses} />
+
+            <BonusList items={ebookBonuses} />
+
             <Separator />
+
             <div className="space-y-2 text-sm">
               <div className="flex items-center gap-2 text-muted-foreground">
+                <Mail className="size-4 text-primary" />
+                Lien de téléchargement envoyé par email
+              </div>
+              <div className="flex items-center gap-2 text-muted-foreground">
                 <Clock className="size-4 text-primary" />
-                Lien de téléchargement envoyé en 5 minutes
+                Vérification du paiement sous 5 minutes
               </div>
               <div className="flex items-center gap-2 text-muted-foreground">
                 <ShieldCheck className="size-4 text-primary" />
-                Paiement sécurisé et vérifié manuellement
+                Paiement sécurisé · aucune donnée bancaire stockée
+              </div>
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Download className="size-4 text-primary" />
+                Compatible Kindle, Kobo, iPhone, Android, PC
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
+      {/* Form */}
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5 lg:col-span-7">
         <Card>
           <CardContent className="space-y-5 p-6">
@@ -805,7 +342,7 @@ function DigitalTunnel({ onCreated }: { onCreated: (o: Order) => void }) {
                   />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Le lien EPUB + PDF sera envoyé à cette adresse.
+                    Votre EPUB + PDF sera envoyé à cette adresse dès vérification.
                   </p>
                 </Field>
               )}
@@ -844,9 +381,13 @@ function DigitalTunnel({ onCreated }: { onCreated: (o: Order) => void }) {
           {form.formState.isSubmitting ? (
             <Loader2 className="size-4 animate-spin" />
           ) : (
-            <>Recevoir le livre numérique · {price_promo.toLocaleString("fr-FR")} {currency}</>
+            <>Recevoir mon EPUB + PDF · {price_promo.toLocaleString("fr-FR")} {currency}</>
           )}
         </Button>
+
+        <p className="text-center text-xs text-muted-foreground">
+          En commandant vous acceptez nos CGV. Votre lien de téléchargement arrive par email sous 5 minutes.
+        </p>
       </form>
     </div>
   );
@@ -887,8 +428,6 @@ function Confirmation({
     }
   };
 
-  const isPhysical = order.format === "physical";
-
   return (
     <section
       id="acheter"
@@ -900,17 +439,20 @@ function Confirmation({
             <Check className="size-7" />
           </div>
           <h2 className="mt-5 font-serif text-3xl font-semibold sm:text-4xl">
-            Commande reçue, {order.first_name}
+            Commande reçue, {order.first_name} !
           </h2>
           <p className="mt-3 text-muted-foreground">
             Référence : <span className="font-mono text-foreground">{order.id.slice(0, 8).toUpperCase()}</span>
+          </p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Votre EPUB + PDF sera envoyé à <span className="font-medium text-foreground">{order.email}</span> dès vérification du paiement.
           </p>
         </div>
 
         {/* Status */}
         <Card className="mt-8 border-primary/30 bg-card/70">
           <CardContent className="space-y-4 p-6">
-            <StatusTimeline status={order.status} format={order.format} />
+            <StatusTimeline status={order.status} />
           </CardContent>
         </Card>
 
@@ -991,7 +533,7 @@ function Confirmation({
                 </h3>
                 <p className="mt-2 text-sm text-muted-foreground">
                   Téléversez la capture directement ici. L'équipe vérifie sous 5 minutes
-                  et déclenche votre livraison.
+                  et vous envoie votre EPUB + PDF par email.
                 </p>
               </div>
 
@@ -1038,33 +580,13 @@ function Confirmation({
         {/* Delivery recap */}
         <Card className="mt-6">
           <CardContent className="space-y-3 p-6 text-sm">
-            <h3 className="font-serif text-lg font-semibold">
-              {isPhysical ? "Récapitulatif de livraison" : "Livraison numérique"}
-            </h3>
-            {isPhysical ? (
-              <>
-                <Row label="Format" value="Livre physique" />
-                <Row label="Livraison" value={order.delivery_method === "home" ? "À domicile" : "Retrait en main propre"} />
-                <Row label="Ville" value={order.city ?? "—"} />
-                <Row label="Adresse" value={order.address ?? "—"} />
-                <Row label="Téléphone" value={order.phone ?? "—"} />
-                <Row label="Email" value={order.email} />
-                <p className="!mt-4 rounded-md border border-emerald/30 bg-emerald/10 p-3 text-xs text-foreground/90">
-                  Vous serez contacté au {order.phone} pour confirmer l'adresse. Livraison estimée
-                  sous 3 à 7 jours après vérification du paiement. Vos EPUB + PDF en bonus
-                  vous seront envoyés à {order.email} dès vérification.
-                </p>
-              </>
-            ) : (
-              <>
-                <Row label="Format" value="EPUB + PDF" />
-                <Row label="Email" value={order.email} />
-                <p className="!mt-4 rounded-md border border-emerald/30 bg-emerald/10 p-3 text-xs text-foreground/90">
-                  Votre EPUB + PDF arrive dans quelques minutes par email à {order.email}.
-                  Pensez à vérifier votre dossier spam.
-                </p>
-              </>
-            )}
+            <h3 className="font-serif text-lg font-semibold">Livraison numérique</h3>
+            <Row label="Format" value="EPUB + PDF" />
+            <Row label="Email" value={order.email} />
+            <p className="!mt-4 rounded-md border border-emerald/30 bg-emerald/10 p-3 text-xs text-foreground/90">
+              Votre EPUB + PDF arrivera dans quelques minutes à <strong>{order.email}</strong> dès vérification du paiement.
+              Pensez à vérifier votre dossier spam.
+            </p>
           </CardContent>
         </Card>
 
@@ -1087,20 +609,11 @@ function Row({ label, value }: { label: string; value: string }) {
   );
 }
 
-function StatusTimeline({
-  status,
-  format,
-}: {
-  status: Order["status"];
-  format: OrderFormat;
-}) {
+function StatusTimeline({ status }: { status: Order["status"] }) {
   const steps = [
     { id: "pending", label: "Commande reçue" },
     { id: "verifying", label: "Paiement en vérification" },
-    {
-      id: "confirmed",
-      label: format === "digital" ? "Livré par email" : "Préparation expédition",
-    },
+    { id: "confirmed", label: "EPUB + PDF envoyés" },
   ];
 
   const order: Record<Order["status"], number> = {

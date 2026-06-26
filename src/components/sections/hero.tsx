@@ -1,4 +1,4 @@
-import { ShieldCheck, BookOpenText, Truck, Clock } from "lucide-react";
+import { ShieldCheck, BookOpenText, Clock, Download } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useSpotsRemaining } from "@/hooks/use-spots";
@@ -60,19 +60,19 @@ export function Hero() {
           <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3 text-sm text-muted-foreground">
             <span className="inline-flex items-center gap-2">
               <BookOpenText className="size-4 text-primary" />
-              Livre physique + EPUB/PDF
+              EPUB + PDF inclus
             </span>
             <span className="inline-flex items-center gap-2">
               <ShieldCheck className="size-4 text-primary" />
               Paiement sécurisé
             </span>
             <span className="inline-flex items-center gap-2">
-              <Truck className="size-4 text-primary" />
-              Livraison Cameroun · Congo · Gabon
+              <Download className="size-4 text-primary" />
+              Téléphone · Tablette · PC · Liseuse
             </span>
             <span className="inline-flex items-center gap-2">
               <Clock className="size-4 text-primary" />
-              Numérique en 5 minutes
+              Reçu par email en 5 minutes
             </span>
           </div>
 

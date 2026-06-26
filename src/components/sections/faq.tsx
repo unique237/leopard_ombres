@@ -8,31 +8,31 @@ import {
 const faqs = [
   {
     q: "Comment vais-je recevoir le livre ?",
-    a: "Pour la version physique, le livre est expédié sous 3 à 7 jours après vérification du paiement. Vous serez contacté au numéro indiqué pour confirmer l'adresse. Pour la version numérique (EPUB + PDF), le lien de téléchargement est envoyé à votre email dans les 5 minutes suivant la vérification.",
+    a: "Dès vérification de votre paiement (sous 5 minutes), vous recevez un email avec votre lien de téléchargement EPUB + PDF à l'adresse indiquée lors de la commande. Pensez à vérifier votre dossier spam.",
   },
   {
     q: "Le paiement est-il sécurisé ?",
     a: "Oui. Vous payez via votre opérateur Mobile Money habituel (MTN ou Orange), via CinetPay (qui sécurise carte bancaire et Mobile Money), ou via PayPal/Visa/Mastercard pour la diaspora. Aucune donnée bancaire n'est stockée chez nous.",
   },
   {
-    q: "Sur quel appareil puis-je lire la version numérique ?",
-    a: "Téléphone, tablette, liseuse (Kindle, Kobo) et ordinateur. Vous recevez l'EPUB et le PDF — vous choisissez le format qui vous convient.",
+    q: "Sur quel appareil puis-je lire le livre ?",
+    a: "Sur tous vos appareils : téléphone, tablette, liseuse (Kindle, Kobo) et ordinateur. Vous recevez à la fois l'EPUB et le PDF — vous choisissez le format qui vous convient le mieux.",
   },
   {
     q: "Puis-je payer depuis l'étranger ?",
-    a: "Oui. Choisissez « PayPal / Visa / Mastercard » au moment de la commande. C'est l'option pensée pour la diaspora.",
+    a: "Oui. Choisissez « PayPal / Visa / Mastercard » au moment de la commande. C'est l'option pensée pour la diaspora et les lecteurs hors Afrique centrale.",
   },
   {
     q: "Et si je n'ai jamais acheté un livre en ligne ?",
-    a: "Vous êtes guidé étape par étape : choix du format, vos coordonnées, choix du moyen de paiement, instructions claires, puis vous téléversez la capture du paiement directement sur le site. Une équipe humaine vérifie et vous écrit.",
+    a: "Vous êtes guidé étape par étape : vos coordonnées, choix du moyen de paiement, instructions claires, puis vous téléversez la capture du paiement directement sur le site. Une équipe humaine vérifie et vous envoie le livre par email.",
   },
   {
     q: "Y a-t-il un remboursement possible ?",
-    a: "Pour la version numérique, le contenu étant livré immédiatement, aucun remboursement après envoi. Pour la version physique, en cas de problème de livraison, contactez-nous à feminina08@gmail.com — nous trouvons une solution.",
+    a: "Le contenu étant livré numériquement dès vérification, aucun remboursement n'est possible après envoi du lien. En cas de problème technique, contactez-nous à feminina08@gmail.com — nous trouvons une solution.",
   },
   {
     q: "La promo est-elle vraiment limitée ?",
-    a: "Oui — 500 exemplaires au prix de lancement (physique + numérique confondus), jusqu'au 31 juillet 2026. Le compteur en haut de page est mis à jour en temps réel.",
+    a: "Oui — 500 exemplaires au prix de lancement, jusqu'au 31 juillet 2026. Le compteur en haut de page est mis à jour en temps réel.",
   },
 ];
 

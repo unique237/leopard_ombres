@@ -10,6 +10,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DIST_DIR = path.resolve(__dirname, "../dist");
 const UPLOADS_DIR = path.resolve(process.cwd(), "uploads");
 
+import { runMigrations } from "./migrate.js";
 import authRouter from "./routes/auth.js";
 import ordersRouter from "./routes/orders.js";
 import booksRouter from "./routes/books.js";
@@ -67,7 +68,14 @@ app.use(
   }
 );
 
-app.listen(PORT, () => {
-  console.log(`\n✓ API server running at http://localhost:${PORT}`);
-  console.log(`  API: http://localhost:${PORT}/api/health\n`);
-});
+runMigrations()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`\n✓ API server running at http://localhost:${PORT}`);
+      console.log(`  API: http://localhost:${PORT}/api/health\n`);
+    });
+  })
+  .catch((err) => {
+    console.error("[migrate] Fatal error — server will not start:", err);
+    process.exit(1);
+  });

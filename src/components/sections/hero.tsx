@@ -117,7 +117,7 @@ export function Hero() {
             <div className="absolute -inset-6 -z-10 bg-gradient-to-tr from-primary/30 via-emerald/15 to-transparent blur-3xl" />
             <div ref={coverRef} className="will-change-transform">
               <img
-                src="/book-cover.webp"
+                src="/book-cover.jpeg"
                 alt="Couverture du roman Le Léopard et les Ombres de Koreen Mbombele"
                 className="w-full rounded-md shadow-[0_30px_80px_-20px_rgba(0,0,0,0.7)]"
                 loading="eager"

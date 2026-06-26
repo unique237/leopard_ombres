@@ -15,7 +15,7 @@ export function Auteure() {
             <div className="absolute -inset-4 -z-10 bg-gradient-to-br from-primary/30 to-emerald/20 blur-2xl" />
             <div ref={portraitRef} className="will-change-transform">
               <img
-                src="/author-portrait.webp"
+                src="/author-portrait.jpeg"
                 alt="Portrait de Koreen Mbombele, auteure du roman"
                 className="w-full rounded-md border border-primary/30 shadow-2xl"
                 loading="lazy"

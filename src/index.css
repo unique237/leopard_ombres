@@ -52,8 +52,13 @@
   ============================================================
   THEME — Le Léopard et les Ombres
   Premium African political thriller aesthetic.
-  Deep noir-emerald background, antique-gold accent,
+  Warm noir-crimson background, antique-gold accent,
   cream foreground. Dark by default.
+  Palette drawn directly from the book cover:
+    • Near-black warm shadow (#090505-equivalent)
+    • Deep crimson / blood-red (#6B0000-equivalent)
+    • Antique gold (#C9A84C-equivalent)
+    • Cream / silver text
   ============================================================
 */
 
@@ -61,106 +66,105 @@
   --radius: 0.5rem;
 
   /* ── Surfaces ── */
-  /* Deep blue-black — neutral luxury base, no color bleed */
-  --background: oklch(0.13 0.025 260);
-  --foreground: oklch(0.95 0.015 80);
+  /* Warm near-black — deep shadow of the book cover */
+  --background: oklch(0.08 0.02 20);
+  --foreground: oklch(0.95 0.012 80);
 
-  /* Cards: slightly lifted, still cool-neutral */
-  --card: oklch(0.20 0.030 255);
-  --card-foreground: oklch(0.95 0.015 80);
+  /* Cards: slightly lifted, warm dark */
+  --card: oklch(0.13 0.025 20);
+  --card-foreground: oklch(0.95 0.012 80);
 
-  --popover: oklch(0.20 0.030 255);
-  --popover-foreground: oklch(0.95 0.015 80);
+  --popover: oklch(0.13 0.025 20);
+  --popover-foreground: oklch(0.95 0.012 80);
 
   /* ── Brand colors ── */
-  /* Burnished gold — richer, more luminous */
+  /* Antique gold — "KOREEN MBOMBELE" title color on the cover */
   --primary: oklch(0.82 0.16 82);
-  --primary-foreground: oklch(0.13 0.025 260);
+  --primary-foreground: oklch(0.08 0.02 20);
 
-  /* Deep emerald — subtle surface tint */
-  --secondary: oklch(0.25 0.055 162);
+  /* Deep crimson — dark red silhouette/shadow from book cover */
+  --secondary: oklch(0.22 0.13 22);
   --secondary-foreground: oklch(0.93 0.02 80);
 
   /* ── Utility surfaces ── */
-  --muted: oklch(0.22 0.018 250);
-  --muted-foreground: oklch(0.65 0.015 80);
+  --muted: oklch(0.16 0.02 20);
+  --muted-foreground: oklch(0.65 0.012 80);
 
-  /* Mid emerald — hover states, active chips */
-  --accent: oklch(0.42 0.10 162);
+  /* Mid crimson — hover states, active chips */
+  --accent: oklch(0.38 0.18 22);
   --accent-foreground: oklch(0.97 0.01 80);
 
-  --destructive: oklch(0.58 0.22 22);
+  --destructive: oklch(0.50 0.22 22);
   --destructive-foreground: oklch(0.97 0.01 80);
 
   /* ── Chrome ── */
-  /* More visible borders against the darker, cooler bg */
-  --border: oklch(0.95 0.01 80 / 16%);
+  --border: oklch(0.95 0.01 80 / 14%);
   --input: oklch(0.95 0.01 80 / 10%);
   --ring: oklch(0.82 0.16 82);
 
   /* ── Named tokens ── */
   /* Gold: slightly lighter than primary for text/icon use */
   --gold: oklch(0.87 0.12 82);
-  --gold-foreground: oklch(0.13 0.025 260);
+  --gold-foreground: oklch(0.08 0.02 20);
 
-  /* Emerald: vivid enough to read as accent text */
-  --emerald: oklch(0.62 0.15 162);
+  /* Crimson: vivid blood-red — signature color of the book cover */
+  --emerald: oklch(0.55 0.20 22);
   --emerald-foreground: oklch(0.97 0.01 80);
 
   /* ── Charts ── */
   --chart-1: oklch(0.82 0.16 82);   /* gold */
-  --chart-2: oklch(0.62 0.15 162);  /* emerald */
+  --chart-2: oklch(0.55 0.20 22);   /* crimson */
   --chart-3: oklch(0.68 0.18 45);   /* amber */
-  --chart-4: oklch(0.60 0.14 200);  /* teal */
-  --chart-5: oklch(0.55 0.12 305);  /* violet */
+  --chart-4: oklch(0.35 0.15 22);   /* deep crimson */
+  --chart-5: oklch(0.72 0.10 82);   /* light gold */
 
   /* ── Sidebar ── */
-  /* One step darker than bg — clearly distinct without being jarring */
-  --sidebar: oklch(0.10 0.020 260);
-  --sidebar-foreground: oklch(0.93 0.015 80);
+  /* One step darker than bg — deep shadow */
+  --sidebar: oklch(0.05 0.012 20);
+  --sidebar-foreground: oklch(0.93 0.012 80);
   --sidebar-primary: oklch(0.82 0.16 82);
-  --sidebar-primary-foreground: oklch(0.13 0.025 260);
-  --sidebar-accent: oklch(0.25 0.055 162);
+  --sidebar-primary-foreground: oklch(0.08 0.02 20);
+  --sidebar-accent: oklch(0.22 0.13 22);
   --sidebar-accent-foreground: oklch(0.93 0.02 80);
   --sidebar-border: oklch(0.95 0.01 80 / 10%);
   --sidebar-ring: oklch(0.82 0.16 82);
 }
 
 .dark {
-  /* Dark mode is the same as :root — this is already a dark-first palette */
-  --background: oklch(0.13 0.025 260);
-  --foreground: oklch(0.95 0.015 80);
-  --card: oklch(0.20 0.030 255);
-  --card-foreground: oklch(0.95 0.015 80);
-  --popover: oklch(0.20 0.030 255);
-  --popover-foreground: oklch(0.95 0.015 80);
+  /* Dark mode mirrors :root — this is already a dark-first palette */
+  --background: oklch(0.08 0.02 20);
+  --foreground: oklch(0.95 0.012 80);
+  --card: oklch(0.13 0.025 20);
+  --card-foreground: oklch(0.95 0.012 80);
+  --popover: oklch(0.13 0.025 20);
+  --popover-foreground: oklch(0.95 0.012 80);
   --primary: oklch(0.82 0.16 82);
-  --primary-foreground: oklch(0.13 0.025 260);
-  --secondary: oklch(0.25 0.055 162);
+  --primary-foreground: oklch(0.08 0.02 20);
+  --secondary: oklch(0.22 0.13 22);
   --secondary-foreground: oklch(0.93 0.02 80);
-  --muted: oklch(0.22 0.018 250);
-  --muted-foreground: oklch(0.65 0.015 80);
-  --accent: oklch(0.42 0.10 162);
+  --muted: oklch(0.16 0.02 20);
+  --muted-foreground: oklch(0.65 0.012 80);
+  --accent: oklch(0.38 0.18 22);
   --accent-foreground: oklch(0.97 0.01 80);
-  --destructive: oklch(0.58 0.22 22);
+  --destructive: oklch(0.50 0.22 22);
   --destructive-foreground: oklch(0.97 0.01 80);
-  --border: oklch(0.95 0.01 80 / 16%);
+  --border: oklch(0.95 0.01 80 / 14%);
   --input: oklch(0.95 0.01 80 / 10%);
   --ring: oklch(0.82 0.16 82);
   --gold: oklch(0.87 0.12 82);
-  --gold-foreground: oklch(0.13 0.025 260);
-  --emerald: oklch(0.62 0.15 162);
+  --gold-foreground: oklch(0.08 0.02 20);
+  --emerald: oklch(0.55 0.20 22);
   --emerald-foreground: oklch(0.97 0.01 80);
   --chart-1: oklch(0.82 0.16 82);
-  --chart-2: oklch(0.62 0.15 162);
+  --chart-2: oklch(0.55 0.20 22);
   --chart-3: oklch(0.68 0.18 45);
-  --chart-4: oklch(0.60 0.14 200);
-  --chart-5: oklch(0.55 0.12 305);
-  --sidebar: oklch(0.10 0.020 260);
-  --sidebar-foreground: oklch(0.93 0.015 80);
+  --chart-4: oklch(0.35 0.15 22);
+  --chart-5: oklch(0.72 0.10 82);
+  --sidebar: oklch(0.05 0.012 20);
+  --sidebar-foreground: oklch(0.93 0.012 80);
   --sidebar-primary: oklch(0.82 0.16 82);
-  --sidebar-primary-foreground: oklch(0.13 0.025 260);
-  --sidebar-accent: oklch(0.25 0.055 162);
+  --sidebar-primary-foreground: oklch(0.08 0.02 20);
+  --sidebar-accent: oklch(0.22 0.13 22);
   --sidebar-accent-foreground: oklch(0.93 0.02 80);
   --sidebar-border: oklch(0.95 0.01 80 / 10%);
   --sidebar-ring: oklch(0.82 0.16 82);
@@ -176,8 +180,8 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
     background-image:
-      radial-gradient(at 15% 0%, oklch(0.26 0.045 165 / 0.4) 0px, transparent 50%),
-      radial-gradient(at 85% 90%, oklch(0.30 0.05 80 / 0.18) 0px, transparent 55%);
+      radial-gradient(at 15% 0%, oklch(0.28 0.15 22 / 0.45) 0px, transparent 50%),
+      radial-gradient(at 85% 90%, oklch(0.28 0.06 80 / 0.15) 0px, transparent 55%);
     background-attachment: fixed;
   }
   h1, h2, h3, h4, .font-serif {

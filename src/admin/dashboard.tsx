@@ -218,8 +218,8 @@ export function AdminDashboard() {
                           <div className="font-medium text-foreground">{o.first_name}</div>
                           <div className="text-xs text-muted-foreground">{o.email}</div>
                         </td>
-                        <td className="px-2 py-3 capitalize text-muted-foreground">
-                          {o.format === "physical" ? "Physique" : "Numérique"}
+                        <td className="px-2 py-3 text-muted-foreground">
+                          {o.format === "physical" ? "Physique" : "EPUB + PDF"}
                         </td>
                         <td className="px-2 py-3">
                           <OrderStatusBadge status={o.status} />

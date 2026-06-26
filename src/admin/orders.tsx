@@ -244,8 +244,8 @@ export function AdminOrders() {
                         <div className="font-medium text-foreground">{o.first_name}</div>
                         <div className="text-xs text-muted-foreground">{o.email}</div>
                       </td>
-                      <td className="px-4 py-3 capitalize text-muted-foreground">
-                        {o.format === "physical" ? "Physique" : "Numérique"}
+                      <td className="px-4 py-3 text-muted-foreground">
+                        {o.format === "physical" ? "Physique" : "EPUB + PDF"}
                       </td>
                       <td className="px-4 py-3 text-xs text-muted-foreground">
                         {paymentLabels[o.payment_method]}
@@ -311,7 +311,7 @@ function OrderDialog({
             <div className="mt-2 flex items-baseline justify-between text-sm">
               <span className="text-muted-foreground">Format</span>
               <span className="font-medium">
-                {order.format === "physical" ? "Livre physique" : "Livre numérique"}
+                {order.format === "physical" ? "Livre physique" : "EPUB + PDF"}
               </span>
             </div>
             <div className="mt-1 flex items-baseline justify-between text-sm">
@@ -385,10 +385,10 @@ function OrderDialog({
                   Confirmer le paiement
                 </Button>
               )}
-              {order.status === "confirmed" && order.format === "physical" && (
+              {order.status === "confirmed" && (
                 <Button size="sm" onClick={() => onUpdateStatus(order.id, "delivered")}>
                   <Check className="size-4" />
-                  Marquer livré
+                  {order.format === "physical" ? "Marquer livré" : "EPUB + PDF envoyé"}
                 </Button>
               )}
               {order.status !== "pending" && (
